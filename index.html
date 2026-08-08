@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENTINEL // SOC Console</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L21 6 V12 C21 17 17 21 12 22 C7 21 3 17 3 12 V6 Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 12.5 L11 15 L15.5 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div class="brand-text">
+      <span class="brand-name">SENTINEL</span>
+      <span class="brand-sub">Security Operations Console</span>
+    </div>
+    <span class="live-chip"><span class="live-dot"></span>LIVE</span>
+  </div>
+
+  <div class="topbar-mid" id="statusStrip" aria-label="System status strip"></div>
+
+  <div class="topbar-right">
+    <div class="clock-block">
+      <span id="clockTime" class="clock-time">--:--:--</span>
+      <span id="clockDate" class="clock-date">-- --- ----</span>
+    </div>
+    <button class="icon-btn" id="soundToggleBtn" title="Toggle alert sound" aria-pressed="true">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M4 9v6h4l5 5V4L8 9H4z"/><path id="soundWave" fill="none" stroke="currentColor" stroke-width="1.6" d="M16 8c1.5 1.3 1.5 6.7 0 8"/></svg>
+    </button>
+    <button class="icon-btn" id="notifPermBtn" title="Enable desktop notifications">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 22a2.2 2.2 0 0 0 2.2-2.2h-4.4A2.2 2.2 0 0 0 12 22Zm7-6.3V11c0-3.4-1.8-6.2-5-7v-.8a2 2 0 1 0-4 0V4c-3.2.8-5 3.6-5 7v4.7L3 17.4V18h18v-.6l-2-2.7Z"/></svg>
+    </button>
+    <button class="icon-btn bell-btn" id="alertBellBtn" title="Alert center">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 22a2.2 2.2 0 0 0 2.2-2.2h-4.4A2.2 2.2 0 0 0 12 22Zm7-6.3V11c0-3.4-1.8-6.2-5-7v-.8a2 2 0 1 0-4 0V4c-3.2.8-5 3.6-5 7v4.7L3 17.4V18h18v-.6l-2-2.7Z"/></svg>
+      <span class="badge" id="criticalBadge">0</span>
+    </button>
+    <button class="btn btn-accent" id="exportBtn">Export report</button>
+  </div>
+</header>
+
+<div class="app-shell">
+  <!-- ============ SIDEBAR NAV ============ -->
+  <nav class="sidenav" id="sidenav">
+    <button class="nav-item active" data-tab="overview">
+      <svg viewBox="0 0 24 24" width="17" height="17"><rect x="3" y="3" width="8" height="8" rx="1.5" fill="currentColor"/><rect x="13" y="3" width="8" height="5" rx="1.5" fill="currentColor" opacity=".55"/><rect x="13" y="10" width="8" height="11" rx="1.5" fill="currentColor" opacity=".8"/><rect x="3" y="13" width="8" height="8" rx="1.5" fill="currentColor" opacity=".55"/></svg>
+      <span>Overview</span>
+    </button>
+    <button class="nav-item" data-tab="ip">
+      <svg viewBox="0 0 24 24" width="17" height="17"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span>IP Investigation</span>
+    </button>
+    <button class="nav-item" data-tab="url">
+      <svg viewBox="0 0 24 24" width="17" height="17"><path d="M8.5 15.5 15.5 8.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M11 6H8a5 5 0 0 0 0 10h1M13 18h3a5 5 0 0 0 0-10h-1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span>URL Analyzer</span>
+    </button>
+    <button class="nav-item" data-tab="email">
+      <svg viewBox="0 0 24 24" width="17" height="17"><rect x="3" y="5" width="18" height="14" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m4 6.5 8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span>Email Analyzer</span>
+    </button>
+    <button class="nav-item" data-tab="hash">
+      <svg viewBox="0 0 24 24" width="17" height="17"><path d="M9 3 7 21M17 3l-2 18M4 9h17M3 15h17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span>Hash Analyzer</span>
+    </button>
+    <button class="nav-item" data-tab="logs">
+      <svg viewBox="0 0 24 24" width="17" height="17"><rect x="4" y="3" width="16" height="18" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 8h9M7.5 12h9M7.5 16h5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <span>Log Analyzer</span>
+    </button>
+    <button class="nav-item" data-tab="incidents">
+      <svg viewBox="0 0 24 24" width="17" height="17"><path d="M12 3 2 20h20L12 3Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 10v4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>
+      <span>Incidents</span>
+      <span class="nav-badge" id="incidentNavBadge">0</span>
+    </button>
+
+    <div class="sidenav-foot">
+      <div class="feed-rate">
+        <span class="feed-rate-label">Ingest rate</span>
+        <span class="feed-rate-value"><span id="ingestRate">0</span> evt/min</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <!-- ---------- OVERVIEW ---------- -->
+    <section class="tab-panel active" id="tab-overview">
+
+      <div class="kpi-row">
+        <div class="kpi-card kpi-critical">
+          <span class="kpi-label">Critical</span>
+          <span class="kpi-value" id="kpiCritical">0</span>
+          <span class="kpi-trend" id="kpiCriticalTrend">last 24h</span>
+        </div>
+        <div class="kpi-card kpi-high">
+          <span class="kpi-label">High</span>
+          <span class="kpi-value" id="kpiHigh">0</span>
+          <span class="kpi-trend" id="kpiHighTrend">last 24h</span>
+        </div>
+        <div class="kpi-card kpi-medium">
+          <span class="kpi-label">Medium</span>
+          <span class="kpi-value" id="kpiMedium">0</span>
+          <span class="kpi-trend" id="kpiMediumTrend">last 24h</span>
+        </div>
+        <div class="kpi-card kpi-low">
+          <span class="kpi-label">Low / Info</span>
+          <span class="kpi-value" id="kpiLow">0</span>
+          <span class="kpi-trend" id="kpiLowTrend">last 24h</span>
+        </div>
+        <div class="kpi-card kpi-total">
+          <span class="kpi-label">Total events</span>
+          <span class="kpi-value" id="kpiTotal">0</span>
+          <span class="kpi-trend">since session start</span>
+        </div>
+        <div class="kpi-card kpi-incidents">
+          <span class="kpi-label">Open incidents</span>
+          <span class="kpi-value" id="kpiIncidents">0</span>
+          <span class="kpi-trend">assigned + unassigned</span>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Event volume</h2>
+            <span class="panel-sub">Rolling 60s window, refreshes live</span>
+          </div>
+          <canvas id="volumeChart" height="160"></canvas>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Severity distribution</h2>
+            <span class="panel-sub">All events this session</span>
+          </div>
+          <canvas id="severityChart" height="160"></canvas>
+        </div>
+      </div>
+
+      <div class="grid-2col grid-2col-wide">
+        <div class="panel panel-feed">
+          <div class="panel-head">
+            <h2>Live security event feed</h2>
+            <div class="feed-controls">
+              <input type="text" id="feedSearch" placeholder="Search events, IPs, assets…" class="input input-sm">
+              <select id="feedSeverityFilter" class="input input-sm">
+                <option value="all">All severities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+                <option value="info">Info</option>
+              </select>
+              <select id="feedTypeFilter" class="input input-sm">
+                <option value="all">All types</option>
+              </select>
+              <button class="btn btn-ghost btn-sm" id="pauseFeedBtn">Pause</button>
+            </div>
+          </div>
+          <div class="table-wrap feed-wrap">
+            <table class="data-table" id="feedTable">
+              <thead>
+                <tr>
+                  <th>Time</th><th>Severity</th><th>Type</th><th>Source IP</th><th>Target asset</th><th>Description</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="feedBody"></tbody>
+            </table>
+            <div class="empty-state" id="feedEmpty" style="display:none">No events match the current filters.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>System status</h2>
+            <span class="panel-sub">Simulated infrastructure health</span>
+          </div>
+          <div class="status-list" id="systemStatusList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- IP INVESTIGATION ---------- -->
+    <section class="tab-panel" id="tab-ip">
+      <div class="panel tool-panel">
+        <div class="panel-head">
+          <h2>IP threat investigation</h2>
+          <span class="panel-sub">Local heuristic reputation engine — simulated data, no real scanning performed</span>
+        </div>
+        <div class="tool-input-row">
+          <input type="text" id="ipInput" class="input" placeholder="e.g. 185.220.101.7">
+          <button class="btn btn-accent" id="ipAnalyzeBtn">Investigate</button>
+          <button class="btn btn-ghost" id="ipRandomBtn">Try sample IP</button>
+        </div>
+        <div id="ipResult" class="result-area"></div>
+
+        <div class="api-divider"></div>
+        <div class="api-section">
+          <h3>Optional: live threat intelligence lookup</h3>
+          <p class="api-note">This calls the public AbuseIPDB API from your browser and requires your own free API key. It is completely separate from the simulator above and the dashboard works fully without it. Because AbuseIPDB may block direct browser requests (CORS), this call can fail in some browsers — that's expected, not a bug.</p>
+          <div class="tool-input-row">
+            <input type="password" id="abuseKeyInput" class="input" placeholder="Your AbuseIPDB API key (stored only in this browser)">
+            <button class="btn btn-outline" id="ipLiveBtn">Check live reputation</button>
+          </div>
+          <div id="ipLiveResult" class="result-area"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- URL ANALYZER ---------- -->
+    <section class="tab-panel" id="tab-url">
+      <div class="panel tool-panel">
+        <div class="panel-head">
+          <h2>URL analyzer</h2>
+          <span class="panel-sub">Static structural analysis, runs entirely offline in your browser</span>
+        </div>
+        <div class="tool-input-row">
+          <input type="text" id="urlInput" class="input" placeholder="e.g. http://secure-login.paypal.com.verify-account.example.ru/update">
+          <button class="btn btn-accent" id="urlAnalyzeBtn">Analyze URL</button>
+          <button class="btn btn-ghost" id="urlRandomBtn">Try sample URL</button>
+        </div>
+        <div id="urlResult" class="result-area"></div>
+
+        <div class="api-divider"></div>
+        <div class="api-section">
+          <h3>Optional: live URL reputation lookup</h3>
+          <p class="api-note">This calls the public Google Safe Browsing API and requires your own API key. Separate from the offline analyzer above; the dashboard works fully without it, and the call may fail without a valid key or if CORS is restricted.</p>
+          <div class="tool-input-row">
+            <input type="password" id="gsbKeyInput" class="input" placeholder="Your Google Safe Browsing API key">
+            <button class="btn btn-outline" id="urlLiveBtn">Check live reputation</button>
+          </div>
+          <div id="urlLiveResult" class="result-area"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- EMAIL ANALYZER ---------- -->
+    <section class="tab-panel" id="tab-email">
+      <div class="panel tool-panel">
+        <div class="panel-head">
+          <h2>Phishing email analyzer</h2>
+          <span class="panel-sub">Paste raw email source or headers + body — analyzed locally, nothing is uploaded</span>
+        </div>
+        <textarea id="emailInput" class="textarea" rows="10" placeholder="From: IT Support &lt;it-support@paypa1-secure.com&gt;&#10;To: you@company.com&#10;Subject: Urgent: Verify your account within 24 hours&#10;&#10;Dear user, your account will be suspended. Click here to verify: http://bit.ly/3xample&#10;..."></textarea>
+        <div class="tool-input-row">
+          <button class="btn btn-accent" id="emailAnalyzeBtn">Analyze email</button>
+          <button class="btn btn-ghost" id="emailRandomBtn">Load sample phishing email</button>
+        </div>
+        <div id="emailResult" class="result-area"></div>
+      </div>
+    </section>
+
+    <!-- ---------- HASH ANALYZER ---------- -->
+    <section class="tab-panel" id="tab-hash">
+      <div class="panel tool-panel">
+        <div class="panel-head">
+          <h2>File hash analyzer</h2>
+          <span class="panel-sub">Checks against a local sample malware-hash list, MD5 / SHA-1 / SHA-256</span>
+        </div>
+        <div class="tool-input-row">
+          <input type="text" id="hashInput" class="input" placeholder="e.g. 44d88612fea8a8f36de82e1278abb02f">
+          <button class="btn btn-accent" id="hashAnalyzeBtn">Analyze hash</button>
+          <button class="btn btn-ghost" id="hashRandomBtn">Try known-bad sample</button>
+        </div>
+        <div id="hashResult" class="result-area"></div>
+
+        <div class="api-divider"></div>
+        <div class="api-section">
+          <h3>Optional: live hash reputation lookup</h3>
+          <p class="api-note">This calls the public VirusTotal API and requires your own API key. Separate from the local checker above; the dashboard works fully without it, and the call may fail without a valid key or if CORS is restricted.</p>
+          <div class="tool-input-row">
+            <input type="password" id="vtKeyInput" class="input" placeholder="Your VirusTotal API key">
+            <button class="btn btn-outline" id="hashLiveBtn">Check live reputation</button>
+          </div>
+          <div id="hashLiveResult" class="result-area"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- LOG ANALYZER ---------- -->
+    <section class="tab-panel" id="tab-logs">
+      <div class="panel tool-panel">
+        <div class="panel-head">
+          <h2>Log analyzer</h2>
+          <span class="panel-sub">Paste raw log lines (auth, web server, firewall) — pattern-matched locally</span>
+        </div>
+        <textarea id="logInput" class="textarea" rows="10" placeholder="Jul 12 02:14:31 srv sshd[1122]: Failed password for root from 45.155.205.19 port 51422 ssh2&#10;10.0.0.44 - - [12/Jul/2026:02:15:00] &quot;GET /login.php?id=1' OR '1'='1 HTTP/1.1&quot; 200&#10;..."></textarea>
+        <div class="tool-input-row">
+          <button class="btn btn-accent" id="logAnalyzeBtn">Analyze logs</button>
+          <button class="btn btn-ghost" id="logRandomBtn">Load sample log batch</button>
+        </div>
+        <div id="logResult" class="result-area"></div>
+      </div>
+    </section>
+
+    <!-- ---------- INCIDENTS ---------- -->
+    <section class="tab-panel" id="tab-incidents">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Incident management</h2>
+          <div class="feed-controls">
+            <input type="text" id="incidentSearch" class="input input-sm" placeholder="Search incidents…">
+            <select id="incidentStatusFilter" class="input input-sm">
+              <option value="all">All statuses</option>
+              <option value="Open">Open</option>
+              <option value="Investigating">Investigating</option>
+              <option value="Contained">Contained</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+            <button class="btn btn-accent btn-sm" id="newIncidentBtn">+ New incident</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="incidentTable">
+            <thead>
+              <tr><th>ID</th><th>Title</th><th>Severity</th><th>Status</th><th>Assignee</th><th>Created</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="incidentBody"></tbody>
+          </table>
+          <div class="empty-state" id="incidentEmpty" style="display:none">No incidents yet. Create one manually, or escalate an event from the live feed.</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ TOAST CONTAINER ============ -->
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+<!-- ============ MODAL: incident detail / create ============ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Incident</h3>
+      <button class="icon-btn" id="modalCloseBtn">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
